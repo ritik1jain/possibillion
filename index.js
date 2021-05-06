@@ -16,9 +16,14 @@ const PORT = process.env.PORT || 4000;
 app.use(bodyParser.json());
 app.use(cors());
 
-app.get("/", (req, res) => {
-  res.json({ message: "API Working" });
-});
+if(process.env.NODE_ENV === 'production') {
+  app.use(express.static('client/build'));
+}
+
+
+// app.get("/", (req, res) => {
+//   res.json({ message: "API Working" });
+// });
 
 /**
  * Router Middleware
@@ -27,9 +32,6 @@ app.get("/", (req, res) => {
  */
 app.use("/user", user);
 
-if(process.env.NODE_ENV === 'production') {
-  app.use(express.static('client/build'));
-}
 
 app.listen(PORT, (req, res) => {
   console.log(`Server Started at PORT ${PORT}`);
