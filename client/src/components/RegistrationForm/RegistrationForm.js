@@ -52,8 +52,8 @@ function RegistrationForm(props) {
         
     }
     const redirectToHome = () => {
-        props.updateTitle('Home')
-        props.history.push('/auth');
+        props.updateTitle('Channels')
+        props.history.push('/channels');
     }
     const redirectToLogin = () => {
         props.updateTitle('Login')

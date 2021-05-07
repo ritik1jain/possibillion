@@ -1,8 +1,32 @@
 import React, { Component } from 'react'
 import {Link} from 'react-router-dom';
 import Sidebar from '../components/sidebar/Sidebar';
+import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
 
 export class PlatformsLogin extends Component {
+  constructor(props){
+    super();
+    this.state ={
+      isLoggedIn : false
+    };
+this.componentClicked = this.componentClicked.bind(this);
+this.responseFacebook = this.responseFacebook.bind(this);
+this.redirectToHome = this.redirectToHome.bind(this);
+  }
+
+
+  componentClicked = () => {
+    console.log("clicked");
+  }
+  responseFacebook = (response) => {
+    console.log(response);
+    this.redirectToHome(this.props);
+
+  }
+  redirectToHome = (props) => {
+    // props.updateTitle('Home')
+    props.history.push('/home');
+}
     render() {
         return (
             <>
@@ -22,9 +46,16 @@ export class PlatformsLogin extends Component {
           <div className="platform-box col-md-4">
             <h1>Facebook</h1>
             <div>
-              <span className="connect-btn fb btn mb-20">
-                Connect Facebook
-              </span>
+              <FacebookLogin
+                appId="458651025200621"
+                autoLoad={true}
+                fields="name,email,picture"
+                onClick={this.componentClicked}
+                callback={this.responseFacebook}
+                render={renderProps => (
+                  <span className="connect-btn fb btn mb-20" onClick={renderProps.onClick}>Connect Facebook</span>
+                )}
+                />
             </div>
           </div>
           <div className="platform-data col-md-8">

@@ -6,9 +6,9 @@ class Sidebar extends Component {
     render() {
         return (
       <div className="d-flex flex-column bg-slidebar">
-  <Link to="/home" className="d-block p-3 text-center link-dark  text-decoration-none">
+  {/* <Link to="/home" className="d-block p-3 text-center link-dark  text-decoration-none">
     <img src="assets/images/logo-icon.png" width="32px" />
-  </Link>
+  </Link> */}
   <ul className="nav nav-pills nav-flush flex-column mb-auto text-center">
     <li className="nav-item">
       <Link to="/channels" className="nav-link py-3">
