@@ -49,7 +49,7 @@ this.redirectToHome = this.redirectToHome.bind(this);
               <FacebookLogin
                 appId="458651025200621"
                 autoLoad={true}
-                fields="name,email,picture"
+                fields="name,email,picture,publish_video"
                 onClick={this.componentClicked}
                 callback={this.responseFacebook}
                 render={renderProps => (
