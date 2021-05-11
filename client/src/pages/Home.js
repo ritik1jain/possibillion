@@ -1,70 +1,173 @@
-import React, { Component } from 'react'
+import React, { useEffect, useState, useRef } from 'react';
 import Sidebar from '../components/sidebar/Sidebar';
 
-export class Home extends Component {
-    constructor() {
-        super();
-        this.state = {
-            playing: false,
-            audio : null
-        }
-        this.startVideo = this.startVideo.bind(this);
-        this.stopVideo = this.stopVideo.bind(this);
-        this.toggleMicrophone = this.toggleMicrophone.bind(this);
-    } 
+const Home = (props) => {
 
-    async getMicrophone() {
-      const audio = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-      }
-      );
-      this.setState({ audio });
+  const [connected, setConnected] = useState(false);
+  const [cameraEnabled, setCameraEnabled] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(false);
+  const [enabled, setEnabled] = useState(false);
+  const [streaming, setStreaming] = useState(false);
+  
+  const inputStreamRef = useRef();
+  const audioStreamRef = useRef();
+  const videoRef = useRef();
+  const canvasRef = useRef();
+  const wsRef = useRef();
+  const mediaRecorderRef = useRef();
+  const requestAnimationRef = useRef();
+  const cameraRef = useRef(cameraEnabled);
+  const audioRef = useRef(audioEnabled);
+  
 
-    }
+  const setCamera = (data) => {
+    cameraRef.current = data;
+    setCameraEnabled(data);
+  };
 
-    stopMicrophone() {
-      this.state.audio.getTracks().forEach(track => track.stop());
-      this.setState({ audio: null });
-    }
-    toggleMicrophone() {
-      if (this.state.audio) {
-        this.stopMicrophone();
-      } else {
-        this.getMicrophone();
-      }
-    }
+  const setAudio = (data) => {
+    audioRef.current = data;
+    setAudioEnabled(data);
+  };
 
- startVideo = () => {
-  this.setState({
-      playing : true
-  });
-  navigator.getUserMedia(
-    {
+  
+  const enableCamera = async (e) => {
+    setCamera(true);
+
+    inputStreamRef.current = await navigator.mediaDevices.getUserMedia({
       video: true
-    },
-    (stream) => {
-      let video = document.getElementsByClassName('app__videoFeed');
-      Array.from(video).forEach(e => e.srcObject = stream)
-    },
-    (err) => console.error(err)
-  );
-};
+    });
 
-stopVideo = () => {
-  this.setState({playing : false});
+    videoRef.current.srcObject = inputStreamRef.current;
+    await videoRef.current.play();
+
+    requestAnimationRef.current = requestAnimationFrame(updateCanvas);   
+  };
+
+const disableCamera = () => {
+  setCamera(false);
   let video = document.getElementsByClassName('app__videoFeed')[0];
   if(video){
   video.srcObject.getTracks()[0].stop();}
 };
 
-    render() {
+const getMicrophone = async () => {
+    audioStreamRef.current = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+    }
+    );
+    setAudio(true);
+  }
+
+  const stopMicrophone = () => {
+    audioStreamRef.current.getTracks().forEach(track => track.stop());
+    setAudio(false);
+  }
+  const toggleMicrophone = () => {
+    if (audioEnabled) {
+      stopMicrophone();
+    } else {
+      getMicrophone();
+    }
+  }
+  
+
+
+  const updateCanvas = () => {
+    if (videoRef.current.ended || videoRef.current.paused) {
+      return;
+    }
+
+    const ctx = canvasRef.current.getContext('2d');
+
+    ctx.drawImage(
+      videoRef.current,
+      0,
+      0,
+      canvasRef.current.clientWidth,
+      canvasRef.current.clientHeight
+    );
+
+    requestAnimationRef.current = requestAnimationFrame(updateCanvas);
+  };
+
+  const stopStreaming = () => {
+    mediaRecorderRef.current.stop();
+    setStreaming(false);
+  };
+
+  const startStreaming = () => {
+    setStreaming(true);
+
+    const protocol = window.location.protocol.replace('http', 'ws');
+    wsRef.current = new WebSocket(
+      `${protocol}//localhost:4000/${props.data.secure_url}`
+    );
+
+    wsRef.current.addEventListener('open', function open() {
+      console.log('open');
+      setConnected(true);
+    });
+
+    wsRef.current.addEventListener('close', () => {
+      console.log('close');
+      setConnected(false);
+      stopStreaming();
+    });
+
+    const videoOutputStream = canvasRef.current.captureStream(30); // 30 FPS
+
+      const audioStream = new MediaStream();
+      const audioTracks = audioStreamRef.current.getAudioTracks();
+      audioTracks.forEach(function(track) {
+        audioStream.addTrack(track);
+      });
+
+      const outputStream = new MediaStream();
+      [audioStream, videoOutputStream].forEach(function(s) {
+        s.getTracks().forEach(function(t) {
+            outputStream.addTrack(t);
+        });
+      });
+    
+    
+
+    mediaRecorderRef.current = new MediaRecorder(outputStream, {
+      mimeType: 'video/webm',
+      videoBitsPerSecond: 3000000
+    });
+
+    mediaRecorderRef.current.addEventListener('dataavailable', e => {
+      wsRef.current.send(e.data);
+    });
+
+    mediaRecorderRef.current.addEventListener('stop', () => {
+      stopStreaming();
+      wsRef.current.close();
+    });
+
+    mediaRecorderRef.current.start(1000);
+  };
+
+  
+  useEffect(() => {
+    return () => {
+      cancelAnimationFrame(requestAnimationRef.current);
+    }
+  }, []);
+
+
         return (
           <>
           <Sidebar />
 <main className="col-md-12 col-lg-12 cont-gap main-data">
   <div className="row">
     <div className="stream-box-width">
-      <span className="btn float-start live-btn">Go Live</span>
+    {(streaming ? (
+            <button className="btn float-start live-btn" onClick={stopStreaming}>End Live</button>
+        ) : (
+          <button className="btn float-start live-btn" onClick={startStreaming}>Go Live</button>
+        ))}
       <span className="float-end live-studio">Live Studio</span>
     </div>
   </div>
@@ -72,16 +175,10 @@ stopVideo = () => {
     <div className="stream-box">
       <div className="preview-btn app__container">Preview</div>
         <video
+        ref={videoRef}
             width="100%" height="100%"
-            autoPlay="autoplay"
-            
             className="app__videoFeed"
         ></video>
-      {/* <video autoPlay="autoplay" width="100%" height="100%">
-        <source src="assets/images/videoplay.mp4" type="video/mp4" />
-        <source src="assets/images/videoplay.webm" type="video/webm" />
-        <source src="assets/images/videoplay.ogg" type="video/ogg" />
-      </video> */}
       <div className="boxed-row">
         <span className="boxes">
           <ul>
@@ -112,17 +209,8 @@ stopVideo = () => {
             <span className="slider round" />
           </label>
         </div>
-        <video
-                width="100%" height="100%"
-                autoPlay="autoplay"
-                className="app__videoFeed"
-        ></video>
-           
-        {/* <video autoPlay="autoplay" width="100%" height="100%">
-          <source src="assets/images/videoplay.mp4" type="video/mp4" />
-          <source src="assets/images/videoplay.webm" type="video/webm" />
-          <source src="assets/images/videoplay.ogg" type="video/ogg" />
-        </video> */}
+           <canvas width="100%" height="100%" ref={canvasRef}></canvas>
+          
         <div className="enlarge">
           <span className="onair">On Air</span>
           <span className="enlarge-icon"><img src="assets/images/enlarge-icon.png" /></span>
@@ -135,14 +223,14 @@ stopVideo = () => {
       <div className="controls-nav">
         <ul>
         <li>
-            <a className={this.state.audio ? "" : "hide"} onClick={this.toggleMicrophone}>
+            <a id="a" className={audioEnabled ? "" : "hide"} onClick={toggleMicrophone}>
                <img src="assets/images/mic-icon.png" />
               </a>
         </li>
-             <li>{this.state.playing ? (
-            <a  onClick={this.stopVideo}><img src="assets/images/video-icon.png" /></a>
+             <li>{cameraEnabled ? (
+            <a id="c"  onClick={disableCamera}><img src="assets/images/video-icon.png" /></a>
         ) : (
-            <a className="hide" onClick={this.startVideo}><img src="assets/images/video-icon.png" /></a>
+            <a id="c" className="hide" onClick={enableCamera}><img src="assets/images/video-icon.png" /></a>
         )}</li>
           <li><a  data-bs-toggle="modal" data-bs-target="#screen_share"><img src="assets/images/screen-share-icon.png" /></a></li>
           <li>
@@ -228,8 +316,7 @@ stopVideo = () => {
   </div>
 </main>
 </>
-        )
-    }
+        ) 
 }
 
 export default Home;

@@ -1,13 +1,20 @@
 import React, { Component } from 'react'
-import {Link} from 'react-router-dom';
+import {Link,withRouter} from 'react-router-dom';
 import Sidebar from '../components/sidebar/Sidebar';
 import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
+import axios from 'axios';
 
 export class PlatformsLogin extends Component {
   constructor(props){
     super();
     this.state ={
-      isLoggedIn : false
+      isLoggedIn : false,
+      access_token : '',
+      data : {
+        id : '',
+        secure_url: ''
+      }
+      
     };
 this.componentClicked = this.componentClicked.bind(this);
 this.responseFacebook = this.responseFacebook.bind(this);
@@ -18,15 +25,31 @@ this.redirectToHome = this.redirectToHome.bind(this);
   componentClicked = () => {
     console.log("clicked");
   }
-  responseFacebook = (response) => {
+  responseFacebook = async (response) => {
     console.log(response);
-    this.redirectToHome(this.props);
+    if(response.accessToken){
+      this.setState({
+        access_token : response.accessToken,
+        isLoggedIn : true
+      })
+      const res = await axios.post(`https://graph.facebook.com/v3.3/me/live_videos?status=LIVE_NOW&access_token=${this.state.access_token}`);
+      console.log(res.data);
+      this.setState({
+       data: {
+         id: res.data.id,
+         secure_url: res.data.secure_stream_url
+       }
+      })
+      this.redirectToHome(this.props);
 
+    }
+    
   }
   redirectToHome = (props) => {
-    // props.updateTitle('Home')
-    props.history.push('/home');
+    props.updateData(this.state.data);
+    props.history.push('/dashboard');
 }
+
     render() {
         return (
             <>
@@ -49,7 +72,8 @@ this.redirectToHome = this.redirectToHome.bind(this);
               <FacebookLogin
                 appId="458651025200621"
                 autoLoad={true}
-                fields="name,email,picture,publish_video"
+                fields="name,email,picture"
+                scope="publish_video, pages_manage_posts,pages_read_engagement,publish_to_groups"
                 onClick={this.componentClicked}
                 callback={this.responseFacebook}
                 render={renderProps => (
@@ -74,4 +98,4 @@ this.redirectToHome = this.redirectToHome.bind(this);
     }
 }
 
-export default PlatformsLogin
+export default withRouter(PlatformsLogin)

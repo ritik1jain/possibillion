@@ -9,7 +9,7 @@ import Payments from './pages/Payments';
 import PlatformsLogin from './pages/PlatformsLogin';
 import VideoStorage from './pages/VideoStorage';
 import Platforms from './pages/Platforms';
-
+import Dashboard from './pages/Dashboard';
 import AlertComponent from './components/AlertComponent/AlertComponent';
 import PrivateRoute from './utils/PrivateRoute';
 import LoginForm from './components/LoginForm/LoginForm';
@@ -18,6 +18,7 @@ import Routes from './components/Routes';
 
 function App() {
   const [title, updateTitle] = useState(null);
+  const [data, updateData] = useState(null);
   const [errorMessage, updateErrorMessage] = useState(null);
   
   return (
@@ -33,11 +34,18 @@ function App() {
           <Route path="/login">
             <LoginForm showError={updateErrorMessage} updateTitle={updateTitle}/>
           </Route>
-          <PrivateRoute path='/home' exact component={Home} />
+          <PrivateRoute path='/home' exact>
+            <Home data={data}/>
+          </PrivateRoute>
+          <PrivateRoute path='/dashboard' exact>
+            <Dashboard data={data}/>
+          </PrivateRoute>
           <PrivateRoute path='/channels' exact component={Channels} />
           <PrivateRoute path='/events' exact component={Events} />
           <PrivateRoute path='/payments' exact component={Payments} />
-          <PrivateRoute path='/platformlogin' exact component={PlatformsLogin} />
+          <PrivateRoute path="/platformlogin" >
+            <PlatformsLogin updateData={updateData} />
+          </PrivateRoute>
           <PrivateRoute path='/videostorage' exact component={VideoStorage} />
           <PrivateRoute path='/platforms' exact component={Platforms} />
         </Switch>
