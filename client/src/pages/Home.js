@@ -101,7 +101,7 @@ const getMicrophone = async () => {
 
     const protocol = window.location.protocol.replace('http', 'ws');
     wsRef.current = new WebSocket(
-      `${protocol}//localhost:4000/${props.data.secure_url}`
+      `${protocol}//${window.location.host}/${props.data.secure_url}`
     );
 
     wsRef.current.addEventListener('open', function open() {
