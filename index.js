@@ -30,7 +30,7 @@ const wss = new WebSocketServer({
 
 wss.on('connection', (ws, req) => {
   console.log('Streaming socket connected');
-  console.log(req.url);
+  // console.log(req.url);
   let match = req.url;
   // if ( !(match = req.url.match(/^\/rtmp\/(.*)$/)) ) {
   //   ws.terminate(); // No match, reject the connection.
@@ -113,5 +113,5 @@ app.use("/user", user);
 
 
 if(process.env.NODE_ENV === 'production') {
-  app.use(express.static('client/build'));
+  app.use(express.static('client/build'))
 }
