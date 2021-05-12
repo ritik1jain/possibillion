@@ -109,7 +109,7 @@ app.use((req, res, next) => {
   return next();
 });
 
-app.use("/user", user);
+app.use("/user", user)
 
 
 if(process.env.NODE_ENV === 'production') {
