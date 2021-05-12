@@ -33,7 +33,7 @@ const Home = (props) => {
   
   const enableCamera = async (e) => {
     setCamera(true);
-
+    setEnabled(true);
     inputStreamRef.current = await navigator.mediaDevices.getUserMedia({
       video: true
     });
@@ -46,6 +46,8 @@ const Home = (props) => {
 
 const disableCamera = () => {
   setCamera(false);
+  if(!audioEnabled)
+  setEnabled(false);
   let video = document.getElementsByClassName('app__videoFeed')[0];
   if(video){
   video.srcObject.getTracks()[0].stop();}
@@ -62,6 +64,8 @@ const getMicrophone = async () => {
   const stopMicrophone = () => {
     audioStreamRef.current.getTracks().forEach(track => track.stop());
     setAudio(false);
+    if(!cameraEnabled)
+    setEnabled(false);
   }
   const toggleMicrophone = () => {
     if (audioEnabled) {
@@ -92,8 +96,9 @@ const getMicrophone = async () => {
   };
 
   const stopStreaming = () => {
-    mediaRecorderRef.current.stop();
     setStreaming(false);
+    mediaRecorderRef.current.stop();
+    
   };
 
   const startStreaming = () => {
@@ -107,6 +112,11 @@ const getMicrophone = async () => {
     wsRef.current.addEventListener('open', function open() {
       console.log('open');
       setConnected(true);
+    });
+    wsRef.current.addEventListener('close', () => {
+      console.log('close');
+      setConnected(false);
+      stopStreaming();
     });
 
     const videoOutputStream = canvasRef.current.captureStream(30); // 30 FPS
@@ -143,11 +153,6 @@ const getMicrophone = async () => {
     mediaRecorderRef.current.start(1000);
 
     
-    wsRef.current.addEventListener('close', () => {
-      console.log('close');
-      setConnected(false);
-      stopStreaming();
-    });
 
   };
 
@@ -165,11 +170,11 @@ const getMicrophone = async () => {
 <main className="col-md-12 col-lg-12 cont-gap main-data">
   <div className="row">
     <div className="stream-box-width">
-    {(streaming ? (
+    {enabled ? (streaming ? (
             <button className="btn float-start live-btn" onClick={stopStreaming}>End Live</button>
         ) : (
           <button className="btn float-start live-btn" onClick={startStreaming}>Go Live</button>
-        ))}
+        )):(<button className="btn float-start live-btn">Go Live</button>)}
       <span className="float-end live-studio">Live Studio</span>
     </div>
   </div>
