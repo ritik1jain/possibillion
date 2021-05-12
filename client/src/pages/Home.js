@@ -174,7 +174,7 @@ const getMicrophone = async () => {
             <button className="btn float-start live-btn" onClick={stopStreaming}>End Live</button>
         ) : (
           <button className="btn float-start live-btn" onClick={startStreaming}>Go Live</button>
-        )):(<button className="btn float-start live-btn">Go Live</button>)}
+        )):(<button className="btn float-start live-btn" disabled >Go Live</button>)}
       <span className="float-end live-studio">Live Studio</span>
     </div>
   </div>
