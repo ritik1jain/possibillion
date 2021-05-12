@@ -109,12 +109,6 @@ const getMicrophone = async () => {
       setConnected(true);
     });
 
-    wsRef.current.addEventListener('close', () => {
-      console.log('close');
-      setConnected(false);
-      stopStreaming();
-    });
-
     const videoOutputStream = canvasRef.current.captureStream(30); // 30 FPS
 
       const audioStream = new MediaStream();
@@ -147,6 +141,14 @@ const getMicrophone = async () => {
     });
 
     mediaRecorderRef.current.start(1000);
+
+    
+    wsRef.current.addEventListener('close', () => {
+      console.log('close');
+      setConnected(false);
+      stopStreaming();
+    });
+
   };
 
   
