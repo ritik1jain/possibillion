@@ -1,4 +1,3 @@
-var sslRedirect = require('heroku-ssl-redirect');
 const child_process = require('child_process');
 const express = require('express');
 const WebSocketServer = require('ws').Server;
@@ -15,7 +14,6 @@ const fs = require('fs');
 const app = express();
 InitiateMongoServer();
 
-app.use(sslRedirect());
 
 
 app.use(bodyParser.json());
@@ -26,7 +24,7 @@ app.use("/platform", platform);
 const PORT = process.env.PORT || 4000;
 
 
-const server = http.createServer({
+const server = https.createServer({
   key: fs.readFileSync(path.join(__dirname, 'cert', 'key.pem')),
   cert: fs.readFileSync(path.join(__dirname, 'cert', 'cert.pem'))
 },app);
@@ -35,9 +33,6 @@ const wss = new WebSocketServer({
   server: server
 });
 
-server.listen(PORT, () => {
-	console.log('Listening...');
-  });
 
 app.use((req, res, next) => {
   console.log('HTTPS Request: ' + req.method + ' ' + req.originalUrl);
@@ -129,4 +124,6 @@ wss.on('connection', (ws, req) => {
   });
   
 });
-
+server.listen(PORT, () => {
+	console.log('Listening...');
+  });
