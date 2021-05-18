@@ -43,7 +43,7 @@ function App() {
           <PrivateRoute path='/channels' exact component={Channels} />
           <PrivateRoute path='/events' exact component={Events} />
           <PrivateRoute path='/payments' exact component={Payments} />
-          <PrivateRoute path="/platformlogin" >
+          <PrivateRoute path="/platformsLogin/:name" >
             <PlatformsLogin updateData={updateData} />
           </PrivateRoute>
           <PrivateRoute path='/videostorage' exact component={VideoStorage} />

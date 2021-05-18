@@ -29,7 +29,7 @@ function RegistrationForm(props) {
                 "contact" :state.contact,
                 "username": state.username
             }
-            axios.post('/user/signup', payload)
+            axios.post(API_BASE_URL+'/user/signup', payload)
                 .then(function (response) {
                     if(response.status === 200){
                         setState(prevState => ({

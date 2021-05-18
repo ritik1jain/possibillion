@@ -1,9 +1,41 @@
+import axios from 'axios';
 import React, { Component } from 'react'
 import {Link} from 'react-router-dom';
 import Sidebar from '../components/sidebar/Sidebar';
 
 export class Platforms extends Component {
+  constructor(props) {
+    super(props);
+    this.state={
+      platforms: []
+    }
+    this.platformList = this.platformList.bind(this);
+  }
+  
+  platformList() {
+    const list = this.state.platforms.map(e => 
+        <div key={e.id} className="channel-item-box">
+            <div className="channel-item">
+              <Link to={`/platformsLogin/${e.name}`}>
+                <figure><img src={e.image.png} /></figure>
+                <h6>{e.name}</h6>
+              </Link>
+            </div>
+          </div>
+
+    );
+    return list;
+
+  }
+
+  async componentDidMount() {
+    const res = await axios.get("https://api.restream.io/v2/platform/all");
+    this.setState({platforms: res.data});
+  }
+
     render() {
+      const platformslist = this.platformList();
+      console.log(platformslist);
         return (
             <>
             <Sidebar />
@@ -19,58 +51,7 @@ export class Platforms extends Component {
       </div>
       <div className="col-md-12 mt-5">
         <div className="row">
-          <div className="channel-item-box">
-            <div className="channel-item">
-              <Link to="/platformlogin">
-                <figure><img src="assets/images/fb-page.png" /></figure>
-                <h6>Facebbok</h6>
-              </Link></div></div>
-          <div className="channel-item-box">
-            <div className="channel-item">
-              <Link to="/platformlogin">
-                <figure><img src="assets/images/fb-group.png" /></figure>
-                <h6>Facebbok</h6></Link>
-            </div></div>
-          <div className="channel-item-box">
-            <div className="channel-item">
-              <Link to="/platformlogin">
-                <figure><img src="assets/images/fb-profile.png" /></figure>
-                <h6>Facebbok</h6></Link>
-            </div></div>
-          <div className="channel-item-box">
-            <div className="channel-item">
-              <Link to="/platformlogin">
-                <figure><img src="assets/images/youtube.png" /></figure>
-                <h6>Youtube</h6></Link>
-            </div></div>
-          <div className="channel-item-box">
-            <div className="channel-item">
-              <Link to="/platformlogin">
-                <figure><img src="assets/images/periscope.png" /></figure>
-                <h6>Periscope</h6></Link>
-            </div>
-          </div>
-          <div className="channel-item-box">
-            <div className="channel-item">
-              <Link to="/platformlogin">
-                <figure><img src="assets/images/linkdin-page.png" /></figure>
-                <h6>Linkedin</h6>
-              </Link></div></div>
-          <div className="channel-item-box">
-            <div className="channel-item"><Link to="/platformlogin">
-                <figure><img src="assets/images/lindin-event.png" /></figure>
-                <h6>Linkedin</h6></Link>
-            </div></div>
-          <div className="channel-item-box">
-            <div className="channel-item"><Link to="/platformlogin">
-                <figure><img src="assets/images/linkdin-profile.png" /></figure>
-                <h6>Linkedin</h6></Link>
-            </div></div>
-          <div className="channel-item-box">
-            <div className="channel-item"><Link to="/platformlogin">
-                <figure><img src="assets/images/twitch-logo.png" /></figure>
-                <h6>Twitch</h6></Link>
-            </div></div>
+          {platformslist}
         </div>
       </div>
     </div>

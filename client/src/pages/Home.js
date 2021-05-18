@@ -19,6 +19,12 @@ const Home = (props) => {
   const cameraRef = useRef(cameraEnabled);
   const audioRef = useRef(audioEnabled);
   
+  useEffect(() => {
+    return () => {
+      cancelAnimationFrame(requestAnimationRef.current);
+    }
+  }, []);
+
 
   const setCamera = (data) => {
     cameraRef.current = data;
@@ -59,6 +65,7 @@ const getMicrophone = async () => {
     }
     );
     setAudio(true);
+    setEnabled(true);
   }
 
   const stopMicrophone = () => {
@@ -104,22 +111,16 @@ const getMicrophone = async () => {
   const startStreaming = () => {
     setStreaming(true);
 
-    const protocol = window.location.protocol.replace('http', 'ws');
     wsRef.current = new WebSocket(
-      `${protocol}//${window.location.host}/${props.data.secure_url}`
+      window.location.protocol.replace('http', 'wss') + '//' + 
+      window.location.host +
+      '/rtmp/' + 
+      encodeURIComponent(props.data.secure_url)
     );
 
-    wsRef.current.addEventListener('open', function open() {
-      console.log('open');
-      setConnected(true);
-    });
-    wsRef.current.addEventListener('close', () => {
-      console.log('close');
-      setConnected(false);
-      stopStreaming();
-    });
-
-    const videoOutputStream = canvasRef.current.captureStream(30); // 30 FPS
+    wsRef.current.addEventListener('open', (e) => {
+      console.log('WebSocket Open', e);
+      const videoOutputStream = canvasRef.current.captureStream(30); // 30 FPS
 
       const audioStream = new MediaStream();
       const audioTracks = audioStreamRef.current.getAudioTracks();
@@ -137,33 +138,35 @@ const getMicrophone = async () => {
     
 
     mediaRecorderRef.current = new MediaRecorder(outputStream, {
-      mimeType: 'video/webm',
+      mimeType: 'video/webm;codecs=h264',
       videoBitsPerSecond: 3000000
     });
+    console.log(mediaRecorderRef.current);
 
+ 
     mediaRecorderRef.current.addEventListener('dataavailable', e => {
       wsRef.current.send(e.data);
     });
 
+
     mediaRecorderRef.current.addEventListener('stop', () => {
-      stopStreaming();
-      wsRef.current.close();
+      console.log("stop");
+      wsRef.current.close.bind(wsRef.current);
+      setStreaming(false);
+      
     });
-
-    mediaRecorderRef.current.start(1000);
-
     
+    mediaRecorderRef.current.start(1000); // Start recording, and dump data every second
+  }
+  );
 
+  wsRef.current.addEventListener('close', (e) => {
+    console.log('WebSocket Close', e);
+    mediaRecorderRef.current.stop();
+  });
   };
 
   
-  useEffect(() => {
-    return () => {
-      cancelAnimationFrame(requestAnimationRef.current);
-    }
-  }, []);
-
-
         return (
           <>
           <Sidebar />

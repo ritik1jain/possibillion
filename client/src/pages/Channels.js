@@ -13,7 +13,7 @@ class Channels extends Component {
       <div className="col-md-12 p-0">
         <h1>Welcome to Meandor!</h1>
         <p>Add channels and start streaming.</p>
-        <button className="btn add-channel">+ Add Channel</button>
+        <Link to="/platforms"><button className="btn add-channel">+ Add Channel</button></Link>
       </div>
       <div className="col-md-12 mt-5">
         <p className="text-mute">Suggestions</p>
@@ -27,22 +27,22 @@ class Channels extends Component {
           <div className="channel-item-box">
             <div className="channel-item"><Link to="/platforms">
                 <figure><img src="assets/images/fb-group.png" /></figure>
-                <h6>Facebbok</h6></Link>
+                <h6>Youtube</h6></Link>
             </div></div>
           <div className="channel-item-box">
             <div className="channel-item"><Link to="/platforms">
                 <figure><img src="assets/images/fb-profile.png" /></figure>
-                <h6>Facebbok</h6></Link>
+                <h6>LinkedIn</h6></Link>
             </div></div>
           <div className="channel-item-box">
             <div className="channel-item"><Link to="/platforms">
                 <figure><img src="assets/images/fb-profile.png" /></figure>
-                <h6>Facebbok</h6></Link>
+                <h6>twitch</h6></Link>
             </div></div>
           <div className="channel-item-box">
             <div className="channel-item"><Link to="/platforms">
                 <figure><img src="assets/images/fb-profile.png" /></figure>
-                <h6>Facebbok</h6></Link>
+                <h6>kuku</h6></Link>
             </div>
           </div>
         </div>

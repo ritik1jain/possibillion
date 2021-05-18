@@ -19,12 +19,16 @@
     "body-parser": "^1.19.0",
     "concurrently": "^6.0.2",
     "cors": "^2.8.5",
+    "dotenv": "^9.0.2",
     "express": "^4.17.1",
     "express-validator": "^6.3.0",
+    "https": "^1.0.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.8.2",
     "morgan": "^1.10.0",
     "nodemon": "^2.0.7",
+    "react-google-login": "^5.2.2",
+    "socket.io": "^4.1.1",
     "ws": "^7.4.5"
   }
 }

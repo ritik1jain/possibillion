@@ -1,18 +1,20 @@
-const child_process = require('child_process'); 
-const express = require("express");
-const cors = require('cors');
-const bodyParser = require("body-parser");
-const user = require("./routes/user");
-const InitiateMongoServer = require("./config/db");
+const child_process = require('child_process');
+const express = require('express');
 const WebSocketServer = require('ws').Server;
 const http = require('http');
-const url = require('url');
-const { parse } = require('url');
+const https = require('https');
+const bodyParser = require("body-parser");
+const cors = require('cors');
+const user = require("./routes/user");
+const InitiateMongoServer = require("./config/db");
+const  platform  = require('./routes/platform');
+const path = require('path');
+const fs = require('fs');
 
-// Initiate Mongo Server
 InitiateMongoServer();
 
 const app = express();
+
 
 const PORT = process.env.PORT || 4000;
 
@@ -20,23 +22,35 @@ app.use(bodyParser.json());
 app.use(cors());
 
 
-const server = http.createServer(app).listen(PORT, () => {
-  console.log(`Server Started at PORT ${PORT}`);
-});
+const server = https.createServer({
+	key: fs.readFileSync(path.join(__dirname, 'cert', 'key.pem')),
+	cert: fs.readFileSync(path.join(__dirname, 'cert', 'cert.pem'))
+},app);
 
 const wss = new WebSocketServer({
   server: server
 });
 
+app.use((req, res, next) => {
+  console.log('HTTPS Request: ' + req.method + ' ' + req.originalUrl);
+  return next();
+});
+
+
+if(process.env.NODE_ENV === 'production') {
+	app.use(express.static('client/build'))
+  }
+
 wss.on('connection', (ws, req) => {
-  console.log('Streaming socket connected');
-  // console.log(req.url);
-  let match = req.url;
-  // if ( !(match = req.url.match(/^\/rtmp\/(.*)$/)) ) {
-  //   ws.terminate(); // No match, reject the connection.
-  //   return;
-  // }
-  const rtmpUrl = decodeURIComponent(match).substring(1);
+  
+  // Ensure that the URL starts with '/rtmp/', and extract the target RTMP URL.
+  let match;
+  if ( !(match =  req.url.match(/^\/rtmp\/(.*)$/)) ) {
+    ws.terminate(); // No match, reject the connection.
+    return;
+  }
+  
+  const rtmpUrl = decodeURIComponent(match[1]);
   console.log('Target RTMP URL:', rtmpUrl);
   
   // Launch FFmpeg to handle all appropriate transcoding, muxing, and RTMP
@@ -98,20 +112,15 @@ wss.on('connection', (ws, req) => {
   
   // If the client disconnects, stop FFmpeg.
   ws.on('close', (e) => {
-    console.log('close');
-    ffmpeg.kill('SIGINT')
+	  console.log('close');
+    ffmpeg.kill('SIGINT');
   });
   
 });
 
-app.use((req, res, next) => {
-  console.log('HTTP Request: ' + req.method + ' ' + req.originalUrl);
-  return next();
-});
+app.use("/user", user);
+app.use("/platform", platform);
 
-app.use("/user", user)
-
-
-if(process.env.NODE_ENV === 'production') {
-  app.use(express.static('client/build'))
-}
+server.listen(PORT, () => {
+	console.log('Listening...');
+  });
