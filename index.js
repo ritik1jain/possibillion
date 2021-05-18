@@ -1,3 +1,4 @@
+var sslRedirect = require('heroku-ssl-redirect');
 const child_process = require('child_process');
 const express = require('express');
 const WebSocketServer = require('ws').Server;
@@ -11,22 +12,32 @@ const  platform  = require('./routes/platform');
 const path = require('path');
 const fs = require('fs');
 
+const app = express();
 InitiateMongoServer();
 
-const app = express();
+app.use(sslRedirect());
 
-
-const PORT = process.env.PORT || 4000;
 
 app.use(bodyParser.json());
 app.use(cors());
+app.use("/user", user);
+app.use("/platform", platform);
+
+const PORT = process.env.PORT || 4000;
 
 
-const server = http.createServer(app);
+const server = http.createServer({
+  key: fs.readFileSync(path.join(__dirname, 'cert', 'key.pem')),
+  cert: fs.readFileSync(path.join(__dirname, 'cert', 'cert.pem'))
+},app);
 
 const wss = new WebSocketServer({
   server: server
 });
+
+server.listen(PORT, () => {
+	console.log('Listening...');
+  });
 
 app.use((req, res, next) => {
   console.log('HTTPS Request: ' + req.method + ' ' + req.originalUrl);
@@ -35,7 +46,11 @@ app.use((req, res, next) => {
 
 
 if(process.env.NODE_ENV === 'production') {
-	app.use(express.static('client/build'))
+	app.use(express.static('client/build'));
+
+  app.get('*', (req,res) => {
+    res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+  });
   }
 
 wss.on('connection', (ws, req) => {
@@ -115,9 +130,3 @@ wss.on('connection', (ws, req) => {
   
 });
 
-app.use("/user", user);
-app.use("/platform", platform);
-
-server.listen(PORT, () => {
-	console.log('Listening...');
-  });
