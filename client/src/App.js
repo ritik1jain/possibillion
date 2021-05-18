@@ -19,7 +19,7 @@ import Routes from './components/Routes';
 function App() {
   const [title, updateTitle] = useState(null);
   const [data, updateData] = useState(null);
-  const [errorMessage, updateErrorMessage] = useState(null);
+  const [errorMessage, updateErrorMessage] = useState(null)
   
   return (
     <>
