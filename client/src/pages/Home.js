@@ -48,7 +48,7 @@ const Home = (props) => {
     await videoRef.current.play();
 
     requestAnimationRef.current = requestAnimationFrame(updateCanvas);   
-  };
+  }
 
 const disableCamera = () => {
   setCamera(false);
@@ -113,7 +113,7 @@ const getMicrophone = async () => {
 
     wsRef.current = new WebSocket(
       window.location.protocol.replace('http', 'wss') + '//' + 
-      window.location.host +
+      'localhost:4000' +
       '/rtmp/' + 
       encodeURIComponent(props.data.secure_url)
     );

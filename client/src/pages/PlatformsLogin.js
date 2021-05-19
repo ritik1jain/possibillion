@@ -35,7 +35,7 @@ this.refreshTokenSetup = this.refreshTokenSetup.bind(this);
   async componentDidMount(){
 
     console.log(this.props.match.params.name);
-    const res = await axios.get(API_BASE_URL+`/platform/${this.props.match.params.name}`)
+    const res = await axios.get(`/platform/${this.props.match.params.name}`)
     this.setState({
       platform: {...res.data}
     })
