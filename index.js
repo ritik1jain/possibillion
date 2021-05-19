@@ -24,10 +24,7 @@ app.use("/platform", platform);
 const PORT = process.env.PORT || 4000;
 
 
-const server = https.createServer({
-  key: fs.readFileSync(path.join(__dirname, 'cert', 'key.pem')),
-  cert: fs.readFileSync(path.join(__dirname, 'cert', 'cert.pem'))
-},app);
+const server = http.createServer(app);
 
 const wss = new WebSocketServer({
   server: server
